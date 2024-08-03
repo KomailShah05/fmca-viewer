@@ -1,46 +1,21 @@
 // libraries
-import { TableCell, TableHead, TableRow, TextField } from "@mui/material";
-import { COLUMNS_TO_INCLUDE, headerColumns } from "../../config/constants";
+import { TableCell, TableHead, TableRow } from "@mui/material";
+import { headerColumns } from "../../config/constants";
 
-interface Props {
-  handleFilterChange: (
-    column: string
-  ) => (event: React.ChangeEvent<HTMLInputElement>) => void;
-}
-
-const TableHeader = ({ handleFilterChange }: Props) => {
+const TableHeader = () => {
   return (
     <TableHead>
-      <TableRow>
-        {COLUMNS_TO_INCLUDE.map((colName) => (
-          <TableCell
-            key={colName}
-            style={{
-              minWidth: 170,
-              background: "#e3f2fd",
-              fontWeight: "700",
-              textTransform: "capitalize",
-            }}
-          >
-            <TextField
-              label={colName}
-              variant="outlined"
-              size="small"
-              onChange={handleFilterChange(colName)}
-              fullWidth
-            />
-          </TableCell>
-        ))}
-      </TableRow>
       <TableRow>
         {headerColumns.map((colName) => (
           <TableCell
             key={colName}
             style={{
-              minWidth: 170,
+              minWidth: 100,
               background: "#e3f2fd",
               fontWeight: "700",
               textTransform: "capitalize",
+              fontSize: ".8125rem",
+              padding: "10px",
             }}
           >
             {colName}

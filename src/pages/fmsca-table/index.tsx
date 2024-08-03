@@ -3,6 +3,8 @@ import * as React from "react";
 import { useState } from "react";
 import axios from "axios";
 import {
+  Box,
+  CircularProgress,
   Paper,
   Table,
   TableBody,
@@ -10,8 +12,15 @@ import {
   TableContainer,
   TablePagination,
   TableRow,
+  Typography,
 } from "@mui/material";
-import TableHeader from "../../components/fmsca-table/header";
+
+// components
+import TableHeader from "../../components/fmsca-table/Header";
+import Filter from "../../components/fmsca-table/Filter";
+import TopAppBar from "../../components/fmsca-table/AppBar";
+
+// constants
 import { COLUMNS_TO_INCLUDE } from "../../config/constants";
 
 interface RowData {
@@ -24,10 +33,12 @@ export default function FMCATable() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [filters, setFilters] = useState<{ [key: string]: string }>({}); // Store filter values for each column
+  const [isDataLoading, setIsDataLoading] = useState(false);
 
   //  functions loads data from spreadsheet
   const fetchData = async () => {
     try {
+      setIsDataLoading(true);
       const response = await axios.get<{ values: string[][] }>(
         `https://sheets.googleapis.com/v4/spreadsheets/1hB_LjBT9ezZigXnC-MblT2PXZledkZqBnvV23ssfSuE/values/${RANGE}?key=AIzaSyABMiPUGdBbbjQBovGe6Lx4AJxK-1yasyE`
       );
@@ -53,11 +64,11 @@ export default function FMCATable() {
           }
           return rowData;
         });
-
         setData(formattedData);
       }
+      setIsDataLoading(false);
     } catch (error) {
-      console.error("There was an error fetching the data!", error);
+      setIsDataLoading(false);
     }
   };
 
@@ -98,35 +109,77 @@ export default function FMCATable() {
         .includes(filters[key].toLowerCase());
     });
   });
+  const resetFilters = () => {
+    setFilters({});
+  };
 
   return (
-    <Paper sx={{ width: "100%", overflow: "hidden" }}>
-      <TableContainer sx={{ height: "86vh" }}>
-        <Table stickyHeader aria-label="sticky table">
-          <TableHeader handleFilterChange={handleFilterChange} />
-          <TableBody>
-            {filteredData
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((row, index) => (
-                <TableRow hover role="checkbox" tabIndex={-1} key={index}>
-                  {Object.keys(data[0] || {}).map((column) => {
-                    const value = row[column];
-                    return <TableCell key={column}>{value}</TableCell>;
-                  })}
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[10, 25, 100]}
-        component="div"
-        count={filteredData.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handlePageChange}
-        onRowsPerPageChange={handleRowsPerPageChange}
-      />
-    </Paper>
+    <>
+      <TopAppBar />
+      <Box sx={{ margin: "0.5rem 2rem 2rem" }}>
+        <Filter
+          handleFilterChange={handleFilterChange}
+          resetFilters={resetFilters}
+          filterLength={Object.keys(filters).length}
+        />
+        <Paper sx={{ width: "100%", overflow: "hidden" }}>
+          <TableContainer
+            sx={{
+              height: "82vh",
+              "&::-webkit-scrollbar": {
+                width: "0",
+                height: "0",
+              },
+            }}
+          >
+            <Table stickyHeader aria-label="sticky table">
+              <TableHeader />
+              <TableBody sx={{ position: "relative" }}>
+                {isDataLoading ? (
+                  <CircularProgress
+                    color="inherit"
+                    sx={{ position: "absolute", top: "30vh", left: "50%" }}
+                  />
+                ) : filteredData.length === 0 ? (
+                  <Typography
+                    sx={{ position: "absolute", top: "30vh", left: "50%" }}
+                  >
+                    {" "}
+                    No Data Found
+                  </Typography>
+                ) : (
+                  filteredData
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((row, index) => (
+                      <TableRow hover role="checkbox" tabIndex={-1} key={index}>
+                        {Object.keys(data[0] || {}).map((column) => {
+                          const value = row[column];
+                          return (
+                            <TableCell
+                              key={column}
+                              style={{ padding: 12, fontSize: ".6875rem" }}
+                            >
+                              {value}
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                    ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[10, 25, 100]}
+            component="div"
+            count={filteredData.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handlePageChange}
+            onRowsPerPageChange={handleRowsPerPageChange}
+          />
+        </Paper>
+      </Box>
+    </>
   );
 }

@@ -1,6 +1,5 @@
 // libraries
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { Box } from "@mui/material";
 
 // components
 import FMCATable from "./pages/fmsca-table";
@@ -19,11 +18,7 @@ function App() {
       errorElement: <ErrorPage />,
     },
   ]);
-  return (
-    <Box sx={{ margin: ".9375rem" }}>
-      <RouterProvider router={router} />
-    </Box>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
