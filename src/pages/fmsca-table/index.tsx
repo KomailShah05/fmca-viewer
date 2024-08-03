@@ -22,6 +22,7 @@ import TopAppBar from "../../components/fmsca-table/AppBar";
 
 // constants
 import { COLUMNS_TO_INCLUDE } from "../../config/constants";
+import AppFooter from "../../components/fmsca-table/AppFooter";
 
 interface RowData {
   [key: string]: string;
@@ -116,7 +117,7 @@ export default function FMCATable() {
   return (
     <>
       <TopAppBar />
-      <Box sx={{ margin: "0.5rem 2rem 2rem" }}>
+      <Box sx={{ margin: "2.5rem 2rem 2rem" }}>
         <Filter
           handleFilterChange={handleFilterChange}
           resetFilters={resetFilters}
@@ -144,7 +145,6 @@ export default function FMCATable() {
                   <Typography
                     sx={{ position: "absolute", top: "30vh", left: "50%" }}
                   >
-                    {" "}
                     No Data Found
                   </Typography>
                 ) : (
@@ -180,6 +180,7 @@ export default function FMCATable() {
           />
         </Paper>
       </Box>
+      <AppFooter />
     </>
   );
 }
