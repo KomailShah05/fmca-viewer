@@ -1,25 +1,28 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+// libraries
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { Box } from "@mui/material";
+
+// components
+import FMCATable from "./pages/fmsca-table";
+import ErrorPage from "./pages/error-page";
+
+//constants
+
+// styles
+import "./App.css";
 
 function App() {
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <FMCATable />,
+      errorElement: <ErrorPage />,
+    },
+  ]);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Box sx={{ margin: ".9375rem" }}>
+      <RouterProvider router={router} />
+    </Box>
   );
 }
 
