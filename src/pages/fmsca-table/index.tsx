@@ -16,8 +16,8 @@ import {
 } from "@mui/material";
 
 // components
-import TableHeader from "../../components/fmsca-table/header";
-import Filter from "../../components/fmsca-table/filter";
+import TableHeader from "../../components/fmsca-table/AppHeader";
+import Filter from "../../components/fmsca-table/AppFilter";
 import TopAppBar from "../../components/fmsca-table/AppBar";
 
 // constants
