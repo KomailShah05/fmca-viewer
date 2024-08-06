@@ -1,6 +1,8 @@
 # Published website url
 https://fmsca-viewer-task.netlify.app/
 
+# env file
+For .env file please refer to admin
 
 # Getting Started with Create React App
 
