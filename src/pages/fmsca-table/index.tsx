@@ -10,30 +10,43 @@ import {
   TablePagination,
   Typography,
 } from "@mui/material";
+import PivotTableUI from "react-pivottable/PivotTableUI";
 
 // components
-import TableHeader from "../../components/fmsca-table/AppHeader";
 import Filter from "../../components/fmsca-table/AppFilter";
 import TopAppBar from "../../components/fmsca-table/AppBar";
-import PivotTableUI from "react-pivottable/PivotTableUI";
-import "react-pivottable/pivottable.css";
-import TableRenderers from 'react-pivottable/TableRenderers';
+import TableRenderers from "react-pivottable/TableRenderers";
+import AppFooter from "../../components/fmsca-table/AppFooter";
 
 // constants
 import { COLUMNS_TO_INCLUDE } from "../../config/constants";
-import AppFooter from "../../components/fmsca-table/AppFooter";
+
+// styles
+import "react-pivottable/pivottable.css";
 
 interface RowData {
   [key: string]: string;
 }
 
 const defaultPivotState = {
-  rows: ['created_dt', 'data_source_modified_dt', 'entity_type', 'operating_status', 'legal_name', 'dba_name', 'physical_address', 'phone', 'usdot_number', 'mc_mx_ff_number', 'power_units', 'out_of_service_date'], // Replace 'defaultRowField' with your actual field name
-  // cols: ['legal_name'], // Replace 'defaultColField' with your actual field name
-  aggregatorName: 'Count', // Replace with your desired aggregator
+  rows: [
+    "created_dt",
+    "data_source_modified_dt",
+    "entity_type",
+    "operating_status",
+    "legal_name",
+    "dba_name",
+    "physical_address",
+    "phone",
+    "usdot_number",
+    "mc_mx_ff_number",
+    "power_units",
+    "out_of_service_date",
+  ],
+  aggregatorName: "Count",
   vals: [],
 };
-const RANGE = "FMSCA_records (2)"; // Adjust the range based on your data
+const RANGE = "FMSCA_records (2)";
 
 export default function FMCATable() {
   const [data, setData] = useState<RowData[]>([]);
@@ -79,13 +92,13 @@ export default function FMCATable() {
       }
       setIsDataLoading(false);
     } catch (error) {
-      console.error("Error fetching data:", error);
       setIsDataLoading(false);
     }
   };
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line
   }, []);
 
   // Update page number
@@ -132,7 +145,6 @@ export default function FMCATable() {
     const start = page * rowsPerPage;
     const end = start + rowsPerPage;
     setPaginatedData(filteredData.slice(start, end));
-    console.log('Paginated Data:', filteredData.slice(start, end));
   }, [filteredData, page, rowsPerPage]);
 
   return (
@@ -168,7 +180,6 @@ export default function FMCATable() {
             ) : (
               <>
                 <PivotTableUI
-
                   data={paginatedData}
                   onChange={(s: any) => {
                     const newState = { ...s };
@@ -176,8 +187,7 @@ export default function FMCATable() {
                     setPivotState(newState);
                   }}
                   {...pivotState}
-                  renderers={{ ...TableRenderers, }}
-
+                  renderers={{ ...TableRenderers }}
                 />
                 <TablePagination
                   rowsPerPageOptions={[10, 25, 100]}
