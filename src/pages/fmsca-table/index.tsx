@@ -13,7 +13,6 @@ import {
 import PivotTableUI from "react-pivottable/PivotTableUI";
 
 // components
-import Filter from "../../components/fmsca-table/AppFilter";
 import TopAppBar from "../../components/fmsca-table/AppBar";
 import TableRenderers from "react-pivottable/TableRenderers";
 import AppFooter from "../../components/fmsca-table/AppFooter";
@@ -52,7 +51,7 @@ export default function FMCATable() {
   const [data, setData] = useState<RowData[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [filters, setFilters] = useState<{ [key: string]: string }>({});
+  const [filters] = useState<{ [key: string]: string }>({});
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [pivotState, setPivotState] = useState(defaultPivotState);
   const [paginatedData, setPaginatedData] = useState<RowData[]>([]);
@@ -117,19 +116,6 @@ export default function FMCATable() {
     setPage(0);
   };
 
-  // Update filters
-  const handleFilterChange =
-    (column: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-      setFilters({
-        ...filters,
-        [column]: event.target.value,
-      });
-    };
-
-  const resetFilters = () => {
-    setFilters({});
-  };
-
   const filteredData = useMemo(() => {
     return data.filter((row) => {
       return Object.keys(filters).every((key) => {
@@ -151,11 +137,6 @@ export default function FMCATable() {
     <>
       <TopAppBar />
       <Box sx={{ margin: "2.5rem 2rem 2rem" }}>
-        <Filter
-          handleFilterChange={handleFilterChange}
-          resetFilters={resetFilters}
-          filterLength={Object.keys(filters).length}
-        />
         <Paper sx={{ width: "100%", overflow: "hidden" }}>
           <TableContainer
             sx={{
