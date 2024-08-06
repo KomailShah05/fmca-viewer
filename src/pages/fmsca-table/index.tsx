@@ -11,6 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import PivotTableUI from "react-pivottable/PivotTableUI";
+import { format } from "date-fns";
 
 // components
 import TopAppBar from "../../components/fmsca-table/AppBar";
@@ -97,10 +98,26 @@ export default function FMCATable() {
         const formattedData: RowData[] = rows.slice(1).map((row) => {
           let rowData: RowData = {};
           for (const [column, index] of Object.entries(columnsIndex)) {
-            rowData[column] = row[index] || "";
+            let value = row[index] || "";
+
+            // Format date fields if present
+            if (
+              [
+                "created_dt",
+                "data_source_modified_dt",
+                "out_of_service_date",
+              ].includes(column) &&
+              value
+            ) {
+              const date = new Date(value);
+              value = format(date, "yyyy-MM-dd HH:mm:ss");
+            }
+
+            rowData[column] = value;
           }
           return rowData;
         });
+
         setData(formattedData);
       }
       setIsDataLoading(false);
@@ -108,7 +125,6 @@ export default function FMCATable() {
       setIsDataLoading(false);
     }
   };
-
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line
@@ -147,6 +163,24 @@ export default function FMCATable() {
     setPaginatedData(filteredData.slice(start, end));
   }, [filteredData, page, rowsPerPage]);
 
+  // Convert paginatedData to a 2D array of strings for PivotTableUI
+  const pivotData = useMemo(() => {
+    if (paginatedData.length === 0) return [];
+
+    // Get headers
+    const headers = Object.keys(paginatedData[0]);
+
+    // Create a 2D array where the first row is headers
+    const dataRows = paginatedData.map((row) =>
+      headers.map((header) => row[header] || "")
+    );
+
+    // You can add additional logic here if you need to include grouping fields
+    // For example, if you want to group by year, month, or week in pivot data,
+    // you can add those fields dynamically here if they are required for your pivot table
+
+    return [headers, ...dataRows];
+  }, [paginatedData]);
   return (
     <>
       <TopAppBar />
@@ -175,7 +209,7 @@ export default function FMCATable() {
             ) : (
               <>
                 <PivotTableUI
-                  data={paginatedData}
+                  data={pivotData}
                   onChange={(s: any) => {
                     const newState = { ...s };
                     delete newState.data;
