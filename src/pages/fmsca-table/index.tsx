@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import TopAppBar from "../../components/fmsca-table/AppBar";
 import TableRenderers from "react-pivottable/TableRenderers";
 import AppFooter from "../../components/fmsca-table/AppFooter";
+import { useLocation } from "react-router-dom";
 
 // constants
 import { COLUMNS_TO_INCLUDE } from "../../config/constants";
@@ -64,6 +65,13 @@ const defaultPivotState = {
 const RANGE = "FMSCA_records (2)";
 
 export default function FMCATable() {
+  const location = useLocation();
+
+  // Convert the query string into a URLSearchParams object
+  const queryParams = new URLSearchParams(location.search);
+
+  // Get the value of 'template_id' from query parameters
+  const templateId = queryParams.get("template_id");
   const [data, setData] = useState<RowData[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -133,8 +141,31 @@ export default function FMCATable() {
   }, []);
 
   // Save pivot table state to local storage
-  const saveTemplate = () => {
+  const saveTemplate = async () => {
     localStorage.setItem("pivotTableState", JSON.stringify(pivotState));
+    try {
+      const response = await axios.post(
+        "https://fcma-backend.onrender.com/api/pivot-state/save",
+        {
+          state: pivotState,
+        }
+      );
+      // Assuming response.data.template_id contains the template_id
+      const templateId = response.data.templateId;
+
+      if (templateId) {
+        // Create a new URL object based on the current location
+        const url = new URL(window.location.href);
+
+        // Set or update the template_id query parameter
+        url.searchParams.set("template_id", templateId);
+
+        // Use the history API to change the URL without reloading the page
+        window.history.pushState({}, "", url);
+
+        // Alternatively, you could use window.location.replace(url) if you prefer replacing the entire URL.
+      }
+    } catch (error) {}
     alert("Template saved!");
   };
 
@@ -142,27 +173,43 @@ export default function FMCATable() {
   const resetTemplate = () => {
     setPivotState(defaultPivotState);
     localStorage.removeItem("pivotTableState");
+    const url = new URL(window.location.href);
+    url.search = ""; // Clear all query parameters
+    window.history.replaceState({}, "", url.toString());
+  };
+
+  const fetchPivotState = async () => {
+    try {
+      const response = await axios.get(
+        `https://fcma-backend.onrender.com/api/pivot-state/${templateId}`
+      );
+      setPivotState(response.data.state);
+    } catch (error) {}
   };
 
   // Check for saved state in local storage
   useEffect(() => {
     const savedState = localStorage.getItem("pivotTableState");
-    if (savedState) {
+    if (templateId) {
+      fetchPivotState();
+      return;
+    } else if (savedState) {
       const parsedState = JSON.parse(savedState);
-
       if (parsedState) {
         setPivotState(parsedState);
         return;
       }
+    } else {
       setPivotState(defaultPivotState); // Use default state if invalid
     }
+    // eslint-disable-next-line
   }, []);
 
   // Handle page unload
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = ""; // This is required for some browsers to show the prompt
+      // e.preventDefault();
+      // e.returnValue = ""; // This is required for some browsers to show the prompt
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
