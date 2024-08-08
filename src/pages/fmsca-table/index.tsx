@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import axios from "axios";
 import {
   Box,
+  Button,
   CircularProgress,
   Paper,
   TableContainer,
@@ -20,10 +21,10 @@ import AppFooter from "../../components/fmsca-table/AppFooter";
 
 // constants
 import { COLUMNS_TO_INCLUDE } from "../../config/constants";
-
 // styles
 import "react-pivottable/pivottable.css";
-
+import Plot from "react-plotly.js";
+import createPlotlyRenderers from "react-pivottable/PlotlyRenderers";
 interface RowData {
   [key: string]: string;
 }
@@ -72,8 +73,9 @@ export default function FMCATable() {
   const [paginatedData, setPaginatedData] = useState<RowData[]>([]);
 
   const apiKey = process.env.REACT_APP_API_KEY;
-
+  const PlotlyRenderers = createPlotlyRenderers(Plot);
   // Fetch data from the spreadsheet
+
   const fetchData = async () => {
     try {
       setIsDataLoading(true);
@@ -130,6 +132,46 @@ export default function FMCATable() {
     // eslint-disable-next-line
   }, []);
 
+  // Save pivot table state to local storage
+  const saveTemplate = () => {
+    localStorage.setItem("pivotTableState", JSON.stringify(pivotState));
+    alert("Template saved!");
+  };
+
+  // Reset pivot table state to default
+  const resetTemplate = () => {
+    setPivotState(defaultPivotState);
+    localStorage.removeItem("pivotTableState");
+  };
+
+  // Check for saved state in local storage
+  useEffect(() => {
+    const savedState = localStorage.getItem("pivotTableState");
+    if (savedState) {
+      const parsedState = JSON.parse(savedState);
+
+      if (parsedState) {
+        setPivotState(parsedState);
+        return;
+      }
+      setPivotState(defaultPivotState); // Use default state if invalid
+    }
+  }, []);
+
+  // Handle page unload
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = ""; // This is required for some browsers to show the prompt
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
   // Update page number
   const handlePageChange = (
     event: React.MouseEvent<HTMLButtonElement> | null,
@@ -184,6 +226,26 @@ export default function FMCATable() {
   return (
     <>
       <TopAppBar />
+      <Box
+        sx={{
+          padding: "8px",
+          display: "flex",
+          justifyContent: "flex-end", // Aligns buttons to the right
+          position: "relative",
+        }}
+      >
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={saveTemplate}
+          sx={{ marginRight: "8px" }}
+        >
+          Save Template
+        </Button>
+        <Button variant="contained" color="secondary" onClick={resetTemplate}>
+          Reset
+        </Button>
+      </Box>
       <Box sx={{ margin: "2.5rem 2rem 2rem" }}>
         <Paper sx={{ width: "100%", overflow: "hidden" }}>
           <TableContainer
@@ -209,14 +271,20 @@ export default function FMCATable() {
             ) : (
               <>
                 <PivotTableUI
+                  unusedOrientationCutoff={200}
                   data={pivotData}
                   onChange={(s: any) => {
                     const newState = { ...s };
                     delete newState.data;
+                    delete newState["aggregators"];
+                    delete newState["renderers"];
+                    delete newState["rendererOptions"];
+                    delete newState["localeStrings"];
                     setPivotState(newState);
                   }}
                   {...pivotState}
-                  renderers={{ ...TableRenderers }}
+                  renderers={Object.assign({}, TableRenderers, PlotlyRenderers)}
+                  plotlyOptions={{ width: 1600 }}
                 />
                 <TablePagination
                   rowsPerPageOptions={[10, 25, 100]}
