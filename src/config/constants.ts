@@ -27,4 +27,13 @@ const COLUMNS_TO_INCLUDE = [
   "out_of_service_date",
 ];
 
+
+export const formatColumnName = (name: string) => {
+  // Remove underscores and capitalize first letter of each word
+  return name
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 export { COLUMNS_TO_INCLUDE, headerColumns };
