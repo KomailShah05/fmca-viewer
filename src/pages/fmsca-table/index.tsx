@@ -117,6 +117,7 @@ export default function FMCATable() {
     if (showPivotTable) {
       setIsDataChanged(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pivotState]);
 
   const fetchData = async () => {
@@ -265,6 +266,7 @@ export default function FMCATable() {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDataChanged, pivotState]);
 
   // Update page number

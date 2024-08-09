@@ -23,3 +23,7 @@ yarn-error.log*
 
 # package manager locks
 package-lock.json
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat
+.gitignore
