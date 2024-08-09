@@ -11,12 +11,14 @@ interface Props {
   handleClickOpen: () => void;
   handleClose: () => void;
   saveTemplate: () => void;
+  loading: boolean;
 }
 export default function SaveDialog({
   open,
   handleClickOpen,
   handleClose,
   saveTemplate,
+  loading = false,
 }: Props) {
   return (
     <React.Fragment>
@@ -33,8 +35,10 @@ export default function SaveDialog({
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>No</Button>
-          <Button onClick={saveTemplate} autoFocus>
+          <Button onClick={handleClose} disabled={loading}>
+            No
+          </Button>
+          <Button onClick={saveTemplate} autoFocus disabled={loading}>
             Yes
           </Button>
         </DialogActions>

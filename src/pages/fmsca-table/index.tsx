@@ -39,11 +39,6 @@ interface RowData {
   [key: string]: string;
 }
 
-interface ProcessedDataEntry {
-  month: string; // Format "YYYY-MM"
-  count: number;
-}
-
 const defaultPivotState = {
   rows: [
     "created_dt",
@@ -89,7 +84,6 @@ export default function FMCATable() {
   const [data, setData] = useState<RowData[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  // const [filters] = useState<{ [key: string]: string }>({});
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [pivotState, setPivotState] = useState(defaultPivotState);
   const [paginatedData, setPaginatedData] = useState<RowData[]>([]);
@@ -98,13 +92,11 @@ export default function FMCATable() {
   const [filters, setFilters] = useState<{ [key: string]: string }>({}); // Store filter values for each column
   const [isDataChanged, setIsDataChanged] = useState(false);
   const apiKey = process.env.REACT_APP_API_KEY;
+  const [loading, setloading] = useState(false);
   const PlotlyRenderers = createPlotlyRenderers(Plot);
   const [order, setOrder] = useState<"asc" | "desc">("asc");
   const [orderBy, setOrderBy] = useState<string>(COLUMNS_TO_INCLUDE[0]);
-  const [editingCell, setEditingCell] = useState<{
-    rowIndex: string;
-    columnName: string;
-  } | null>(null);
+
   const [cellValues, setCellValues] = useState<{ [key: string]: string }>({});
   const [open, setOpen] = React.useState(false);
 
@@ -173,7 +165,7 @@ export default function FMCATable() {
 
         setData(formattedData);
 
-        const result = processData(formattedData);
+        processData(formattedData);
       }
       setIsDataLoading(false);
     } catch (error) {
@@ -187,6 +179,7 @@ export default function FMCATable() {
 
   // Save pivot table state to local storage
   const saveTemplate = async () => {
+    setloading(true);
     localStorage.setItem("pivotTableState", JSON.stringify(pivotState));
     try {
       const response = await axios.post(
@@ -195,6 +188,8 @@ export default function FMCATable() {
           state: pivotState,
         }
       );
+      setloading(false);
+
       // Assuming response.data.template_id contains the template_id
       const templateId = response.data.templateId;
 
@@ -208,10 +203,13 @@ export default function FMCATable() {
         // Use the history API to change the URL without reloading the page
         window.history.pushState({}, "", url);
         setIsDataChanged(false);
+        handleClose();
         // Alternatively, you could use window.location.replace(url) if you prefer replacing the entire URL.
       }
-    } catch (error) {}
-    alert("Template saved!");
+    } catch (error) {
+      setloading(false);
+      handleClose();
+    }
   };
 
   // Reset pivot table state to default
@@ -398,9 +396,6 @@ export default function FMCATable() {
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
-  const handleBlur = () => {
-    setEditingCell(null);
-  };
   const validateDateTime = (value: string): boolean => {
     // Regex for YYYY-MM-DD HH:MM:SS format
     const dateTimeRegex = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
@@ -711,7 +706,6 @@ export default function FMCATable() {
                                             setIsEditing(true);
                                           }}
                                           onBlur={() => {
-                                            handleBlur();
                                             setIsEditing(false);
                                           }}
                                           fullWidth
@@ -766,6 +760,7 @@ export default function FMCATable() {
           handleClickOpen={handleClickOpen}
           handleClose={handleClose}
           saveTemplate={saveTemplate}
+          loading={loading}
         />
       </Box>
       <AppFooter />
